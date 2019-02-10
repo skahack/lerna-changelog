@@ -63,7 +63,8 @@ export default class Changelog {
     const commits = await this.getCommitInfos(from, to);
 
     // Step 6: Group commits by release (local)
-    let releases = this.groupByRelease(commits);
+    // let releases = this.groupByRelease(commits);
+    let releases = this.convertRelease(commits);
 
     // Step 7: Compile list of committers in release (local + remote)
     await this.fillInContributors(releases);
@@ -80,7 +81,7 @@ export default class Changelog {
 
   private packageFromPath(path: string): string {
     const parts = path.split("/");
-    if (parts[0] !== "packages" || parts.length < 3) {
+    if (parts[0] !== "projects" || parts.length < 3) {
       return "";
     }
 
@@ -163,6 +164,12 @@ export default class Changelog {
       { concurrency: 5 }
     );
     progressBar.terminate();
+  }
+
+  private convertRelease(commits: CommitInfo[]): Release[] {
+    const currentTag = UNRELEASED_TAG;
+    const date = this.getToday();
+    return [{ name: currentTag, date, commits }]
   }
 
   private groupByRelease(commits: CommitInfo[]): Release[] {
