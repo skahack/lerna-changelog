@@ -13,6 +13,7 @@ export interface Configuration {
   cacheDir?: string;
   nextVersion: string | undefined;
   nextVersionFromMetadata?: boolean;
+  ignoreFilePath: string[];
 }
 
 export interface ConfigLoaderOptions {
@@ -31,7 +32,7 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
   let config = fromPackageConfig(rootPath) || fromLernaConfig(rootPath) || {};
 
   // Step 2: fill partial config with defaults
-  let { repo, nextVersion, labels, cacheDir, ignoreCommitters } = config;
+  let { repo, nextVersion, labels, cacheDir, ignoreCommitters, ignoreFilePath } = config;
 
   if (!repo) {
     repo = findRepo(rootPath);
@@ -69,6 +70,10 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
     ];
   }
 
+  if (!ignoreFilePath) {
+    ignoreFilePath = []
+  }
+
   return {
     repo,
     nextVersion,
@@ -76,26 +81,27 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
     labels,
     ignoreCommitters,
     cacheDir,
+    ignoreFilePath,
   };
 }
 
 function fromLernaConfig(rootPath: string): Partial<Configuration> | undefined {
   const lernaPath = path.join(rootPath, "lerna.json");
-  if (fs.existsSync(lernaPath)) {
+  if (existsSync(lernaPath)) {
     return JSON.parse(fs.readFileSync(lernaPath)).changelog;
   }
 }
 
 function fromPackageConfig(rootPath: string): Partial<Configuration> | undefined {
   const pkgPath = path.join(rootPath, "package.json");
-  if (fs.existsSync(pkgPath)) {
+  if (existsSync(pkgPath)) {
     return JSON.parse(fs.readFileSync(pkgPath)).changelog;
   }
 }
 
 function findRepo(rootPath: string): string | undefined {
   const pkgPath = path.join(rootPath, "package.json");
-  if (!fs.existsSync(pkgPath)) {
+  if (!existsSync(pkgPath)) {
     return;
   }
 
@@ -111,8 +117,8 @@ function findNextVersion(rootPath: string): string | undefined {
   const pkgPath = path.join(rootPath, "package.json");
   const lernaPath = path.join(rootPath, "lerna.json");
 
-  const pkg = fs.existsSync(pkgPath) ? JSON.parse(fs.readFileSync(pkgPath)) : {};
-  const lerna = fs.existsSync(lernaPath) ? JSON.parse(fs.readFileSync(lernaPath)) : {};
+  const pkg = existsSync(pkgPath) ? JSON.parse(fs.readFileSync(pkgPath)) : {};
+  const lerna = existsSync(lernaPath) ? JSON.parse(fs.readFileSync(lernaPath)) : {};
 
   return pkg.version ? `v${pkg.version}` : lerna.version ? `v${lerna.version}` : undefined;
 }
@@ -126,4 +132,13 @@ export function findRepoFromPkg(pkg: any): string | undefined {
   }
 
   return match[1];
+}
+
+function existsSync(path: string): boolean {
+  try {
+    const out = fs.statSync(path);
+    return true;
+  } catch (err) {
+    return false;
+  }
 }

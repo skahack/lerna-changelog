@@ -1,4 +1,5 @@
 const pMap = require("p-map");
+const pathToRegexp = require("path-to-regexp");
 
 import progressBar from "./progress-bar";
 import { Configuration } from "./configuration";
@@ -85,12 +86,11 @@ export default class Changelog {
       return "";
     }
 
-    if (
-      parts[parts.length - 1] === "database.flow.js" ||
-      parts[parts.length - 1] === "service.flow.js" ||
-      path === "projects/api/src/index.js"
-    ) {
-      return ""
+    for (const p of this.config.ignoreFilePath) {
+      const matcher = pathToRegexp(p);
+      if (matcher.exec(path)) {
+        return "";
+      }
     }
 
     if (parts.length >= 4 && parts[1][0] === "@") {
