@@ -85,6 +85,14 @@ export default class Changelog {
       return "";
     }
 
+    if (
+      parts[parts.length - 1] === "database.flow.js" ||
+      parts[parts.length - 1] === "service.flow.js" ||
+      path === "projects/api/src/index.js"
+    ) {
+      return ""
+    }
+
     if (parts.length >= 4 && parts[1][0] === "@") {
       return `${parts[1]}/${parts[2]}`;
     }
