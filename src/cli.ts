@@ -43,6 +43,10 @@ export async function run() {
         desc: "Infer the name of the next version from package metadata",
         default: false,
       },
+      "projects": {
+        type: "string",
+        desc: "指定したパッケージのみを対象にする",
+      },
     })
     .example(
       "lerna-changelog",
@@ -68,6 +72,10 @@ export async function run() {
 
     if (argv["next-version"]) {
       config.nextVersion = argv["next-version"];
+    }
+
+    if (argv["projects"]) {
+      config.specifiedProjects = argv["projects"].split(',');
     }
 
     let result = await new Changelog(config).createMarkdown(options);

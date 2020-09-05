@@ -67,7 +67,11 @@ export default class Changelog {
     // let releases = this.groupByRelease(commits);
     let releases = this.convertRelease(commits);
 
-    // Step 7: Compile list of committers in release (local + remote)
+    // Step 7: パッケージ指定があった場合は、そのパッケージのみにする
+    releases = this.excludePackage(releases);
+    // console.log(releases[0].commits);
+
+    // Step 8: Compile list of committers in release (local + remote)
     await this.fillInContributors(releases);
 
     return releases;
@@ -178,6 +182,32 @@ export default class Changelog {
     const currentTag = UNRELEASED_TAG;
     const date = this.getToday();
     return [{ name: currentTag, date, commits }]
+  }
+
+  private excludePackage(releases: Release[]): Release[] {
+    const { specifiedProjects } = this.config;
+    if (specifiedProjects.length === 0) {
+      return releases;
+    }
+
+    let re: Release[] = [];
+    for (const release of releases) {
+      let commits = [];
+      for (const commit of release.commits) {
+        if (!commit.packages) {
+          commits.push(commit);
+          continue;
+        }
+        const vs = commit.packages.filter(v => specifiedProjects.includes(v));
+        if (vs.length > 0) {
+          commits.push(commit);
+        }
+      }
+
+      re.push({ ...release, commits, });
+    }
+
+    return re;
   }
 
   private groupByRelease(commits: CommitInfo[]): Release[] {
