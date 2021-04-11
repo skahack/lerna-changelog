@@ -15,6 +15,7 @@ export interface Configuration {
   nextVersionFromMetadata?: boolean;
   ignoreFilePath: string[];
   specifiedProjects: string[];
+  duplicateCheckBranches: string[];
 }
 
 export interface ConfigLoaderOptions {
@@ -33,7 +34,7 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
   let config = fromPackageConfig(rootPath) || fromLernaConfig(rootPath) || {};
 
   // Step 2: fill partial config with defaults
-  let { repo, nextVersion, labels, cacheDir, ignoreCommitters, ignoreFilePath, specifiedProjects } = config;
+  let { repo, nextVersion, labels, cacheDir, ignoreCommitters, ignoreFilePath, specifiedProjects, duplicateCheckBranches } = config;
 
   if (!repo) {
     repo = findRepo(rootPath);
@@ -79,6 +80,10 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
     specifiedProjects = []
   }
 
+  if (!duplicateCheckBranches) {
+    duplicateCheckBranches = []
+  }
+
   return {
     repo,
     nextVersion,
@@ -88,6 +93,7 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
     cacheDir,
     ignoreFilePath,
     specifiedProjects,
+    duplicateCheckBranches,
   };
 }
 

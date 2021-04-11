@@ -29,7 +29,18 @@ export interface CommitListItem {
   date: string;
 }
 
-export function listCommits(from: string, to: string = ""): CommitListItem[] {
+export function listCommits(from: string, to: string = "", duplicateCheckBranches: string[] = []): CommitListItem[] {
+  execa.sync("git", ["fetch"])
+
+  const targetCommits: string[] = []
+  duplicateCheckBranches.forEach(branch => {
+    const commits = execa
+      .sync("git", ["log", "--oneline", "--pretty=%s", `origin/master..origin/${branch}`])
+      .stdout.split("\n")
+      .filter(Boolean)
+    Array.prototype.push.apply(targetCommits, commits)
+  })
+
   // Prints "<short-hash>;<ref-name>;<summary>;<date>"
   // This format is used in `getCommitInfos` for easily analize the commit.
   return execa
@@ -43,5 +54,8 @@ export function listCommits(from: string, to: string = ""): CommitListItem[] {
       const summary = parts[2];
       const date = parts[3];
       return { sha, refName, summary, date };
-    });
+    })
+    .filter((item: CommitListItem) => {
+      return !targetCommits.includes(item.summary)
+    })
 }
