@@ -47,6 +47,10 @@ export async function run() {
         type: "string",
         desc: "指定したパッケージのみを対象にする",
       },
+      "duplicate-check-branches": {
+        type: "string",
+        desc: "指定したブランチに含まれるコミットと重複するコミットを除外する",
+      }
     })
     .example(
       "lerna-changelog",
@@ -76,6 +80,10 @@ export async function run() {
 
     if (argv["projects"]) {
       config.specifiedProjects = argv["projects"].split(',');
+    }
+
+    if (argv["duplicate-check-branches"]) {
+      config.duplicateCheckBranches = argv["duplicate-check-branches"].split(',');
     }
 
     let result = await new Changelog(config).createMarkdown(options);

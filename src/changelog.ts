@@ -108,7 +108,7 @@ export default class Changelog {
     // Determine the tags range to get the commits for. Custom from/to can be
     // provided via command-line options.
     // Default is "from last tag".
-    return Git.listCommits(from, to);
+    return Git.listCommits(from, to, this.config.duplicateCheckBranches);
   }
 
   private async getCommitters(commits: CommitInfo[]): Promise<GitHubUserResponse[]> {
