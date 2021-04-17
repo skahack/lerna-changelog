@@ -1,14 +1,14 @@
 {
-  "name": "lerna-changelog",
+  "name": "@newn-team/lerna-changelog",
   "version": "0.8.2",
   "description": "Generate a changelog for a lerna monorepo",
   "keywords": [
     "changelog",
     "lerna"
   ],
-  "homepage": "https://github.com/lerna/lerna-changelog#readme",
+  "homepage": "https://github.com/newn-team/lerna-changelog#readme",
   "bugs": {
-    "url": "https://github.com/lerna/lerna-changelog/issues"
+    "url": "https://github.com/newn-team/lerna-changelog/issues"
   },
   "license": "MIT",
   "author": "Bo Borgerson <gigabo@gmail.com>",
@@ -18,7 +18,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lerna/lerna-changelog.git"
+    "url": "git+https://github.com/newn-team/lerna-changelog.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   },
   "scripts": {
     "build": "npm run clean && tsc",
