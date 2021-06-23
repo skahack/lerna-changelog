@@ -1,6 +1,6 @@
 {
   "name": "@newn-team/lerna-changelog",
-  "version": "0.8.2",
+  "version": "0.8.2-1",
   "description": "Generate a changelog for a lerna monorepo",
   "keywords": [
     "changelog",
