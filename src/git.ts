@@ -29,6 +29,21 @@ export interface CommitListItem {
   date: string;
 }
 
+function parseLogMessage(commit: string): CommitListItem | null {
+  const parts = commit.match(/hash<(.+)> ref<(.*)> message<(.*)> date<(.*)>/) || [];
+
+  if (!parts || parts.length === 0) {
+    return null;
+  }
+
+  return {
+    sha: parts[1],
+    refName: parts[2],
+    summary: parts[3],
+    date: parts[4],
+  };
+}
+
 export function listCommits(from: string, to: string = "", duplicateCheckBranches: string[] = []): CommitListItem[] {
   execa.sync("git", ["fetch"])
 
@@ -41,20 +56,20 @@ export function listCommits(from: string, to: string = "", duplicateCheckBranche
     Array.prototype.push.apply(targetCommits, commits)
   })
 
-  // Prints "<short-hash>;<ref-name>;<summary>;<date>"
+  // Prints "hash<short-hash> ref<ref-name> message<summary> date<date>"
   // This format is used in `getCommitInfos` for easily analize the commit.
   return execa
-    .sync("git", ["log", "--oneline", "--pretty=%h;%D;%s;%cd", "--date=short", `${from}..${to}`])
+    .sync("git", [
+      "log",
+      "--oneline",
+      "--pretty=hash<%h> ref<%D> message<%s> date<%cd>",
+      "--date=short",
+      `${from}..${to}`,
+    ])
     .stdout.split("\n")
     .filter(Boolean)
-    .map((commit: string) => {
-      const parts = commit.split(";");
-      const sha = parts[0];
-      const refName = parts[1];
-      const summary = parts[2];
-      const date = parts[3];
-      return { sha, refName, summary, date };
-    })
+    .map(parseLogMessage)
+    .filter(Boolean)
     .filter((item: CommitListItem) => {
       return !targetCommits.includes(item.summary)
     })
