@@ -10,6 +10,7 @@ interface CategoryInfo {
 }
 
 interface Options {
+  useCategories: boolean;
   categories: string[];
   baseIssueUrl: string;
   unreleasedName: string;
@@ -30,25 +31,39 @@ export default class MarkdownRenderer {
   }
 
   public renderRelease(release: Release): string | undefined {
-    // Group commits in release by category
-    const categories = this.groupByCategory(release.commits);
-    const categoriesWithCommits = categories.filter(category => category.commits.length > 0);
-
-    // Skip this iteration if there are no commits available for the release
-    if (categoriesWithCommits.length === 0) return "";
-
     const releaseTitle = release.name === UNRELEASED_TAG ? this.options.unreleasedName : release.name;
 
     let markdown = `## ${releaseTitle} (${release.date})`;
 
-    for (const category of categoriesWithCommits) {
-      markdown += `\n\n#### ${category.name}\n`;
+    if (this.options.useCategories) {
+      // Group commits in release by category
+      const categories = this.groupByCategory(release.commits);
+      const categoriesWithCommits = categories.filter(category => category.commits.length > 0);
 
-      if (this.hasPackages(category.commits)) {
-        markdown += this.renderContributionsByPackage(category.commits);
-      } else {
-        markdown += this.renderContributionList(category.commits);
+      // Skip this iteration if there are no commits available for the release
+      if (categoriesWithCommits.length === 0) return "";
+
+      for (const category of categoriesWithCommits) {
+        markdown += `\n\n#### ${category.name}\n`;
+
+        if (this.hasPackages(category.commits)) {
+          markdown += this.renderContributionsByPackage(category.commits);
+        } else {
+          markdown += this.renderContributionList(category.commits);
+        }
       }
+
+      if (release.contributors) {
+        markdown += `\n\n${this.renderContributorList(release.contributors)}`;
+      }
+
+      return markdown;
+    }
+
+    if (this.hasPackages(release.commits)) {
+      markdown += this.renderContributionsByPackage(release.commits);
+    } else {
+      markdown += this.renderContributionList(release.commits);
     }
 
     if (release.contributors) {
